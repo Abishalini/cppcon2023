@@ -2,7 +2,7 @@
  
 #include <iostream>
 #include "motion_planner_interface.hpp"
- 
+
 class SimpleMotionPlanner : public motion_planner::IMotionPlanner
 {
 public:
@@ -23,35 +23,7 @@ public:
 	}
 };
 
-#if defined(__linux__) || defined(__APPLE__)
-extern "C"
-{
-	SimpleMotionPlanner *allocator()
-	{
-		return new SimpleMotionPlanner();
-	}
+// class factories
 
-	void deleter(SimpleMotionPlanner *ptr)
-	{
-		delete ptr;
-	}
-}
-#endif
-
-#ifdef WIN32
-extern "C"
-{
-	__declspec (dllexport) SimpleMotionPlanner *allocator()
-	{
-		return new SimpleMotionPlanner();
-	}
-
-	__declspec (dllexport) void deleter(SimpleMotionPlanner *ptr)
-	{
-		delete ptr;
-	}
-}
-#endif
-
-// extern "C" IMotionPlanner* createInstance() { return new SimpleMotionPlanner; }
-// extern "C" void deleteInstance(IMotionPlanner* motion_planner) { delete motion_planner; }
+typedef SimpleMotionPlanner *create_t();
+typedef void destroy_t(SimpleMotionPlanner *ptr);

@@ -32,12 +32,12 @@ public:
     #if defined(__linux__) || defined(__APPLE__)
       handle_ = dlopen(library_path.c_str(), RTLD_LAZY);
       if (handle_) {
-        cerr << "Cannot load library: " << dlerror() << '\n';
+        std::cerr << "Cannot load library: " << dlerror() << '\n';
       }
     #elif _WIN32
       handle_ = LoadLibrary(library_path.c_str());
       if (handle_) {
-        cerr << "Cannot load library: " << library_path << '\n';
+        std::cerr << "Cannot load library: " << library_path << '\n';
       }
     #endif    
     
@@ -49,7 +49,7 @@ public:
     #if defined(__linux__) || defined(__APPLE__)
       if(dlclose(handle_) != 0)
       {
-        cerr << "An error occured closing a library: " << dlerror() << '\n';
+        std::cerr << "An error occured closing a library: " << dlerror() << '\n';
       }
     }
     #elif _WIN32
