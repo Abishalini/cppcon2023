@@ -1,34 +1,65 @@
 #pragma once
+#include <class_loader.hpp>
 
+#pragma once
+
+#include <exception>
 #include <memory>
 
-class ClassLoader
+#if defined(__linux__) || defined(__APPLE__)
+  using HandleType = void*;
+#elif _WIN32
+  using HandleType = HWMODULE;
+#elif __APPLE__
+  using HandleType = void*;
+#endif
+
+template<class Base>
+class ROSfulClassLoader
 {
 public:
-  template<class Base>
   std::unique_ptr<Base> createUniqueInstance(const std::string derived_class_name)
   {
     // Check if class is loaded, else call loadLibrary
 
     // Get Derived type using the derived class name
-    return std::make_unique<Derived>();
+    // return std::make_unique<Base>();
   }
 
   // Input parameter - fully qualified path to the runtime library
   void loadLibrary(const std::string& library_path)
   {
-    if #unix
-    void* handle = dlopen(library_path);
-
-    if #windows
+    #if defined(__linux__) || defined(__APPLE__)
+      handle_ = dlopen(library_path.c_str(), RTLD_LAZY);
+      if (handle_) {
+        cerr << "Cannot load library: " << dlerror() << '\n';
+      }
+    #elif _WIN32
+      handle_ = LoadLibrary(library_path.c_str());
+      if (handle_) {
+        cerr << "Cannot load library: " << library_path << '\n';
+      }
+    #endif    
     
-
   }
 
   // Input parameter - fully qualified path to the runtime library
   void unloadLibrary(const std::string& library_path)
   {
+    #if defined(__linux__) || defined(__APPLE__)
+      if(dlclose(handle_) != 0)
+      {
+        cerr << "An error occured closing a library: " << dlerror() << '\n';
+      }
+    }
+    #elif _WIN32
+			if (FreeLibrary(handle_) == 0) 
+      {
+				std::cerr << "Can't close " << library_path << std::endl;
+			}
+    #elif __APPLE__
 
+    #endif   
   }
 
   std::vector<std::string> getLibraryPath(const std::string& library_name, const std::string& package_name)
@@ -46,5 +77,5 @@ public:
   }
 
 private:
-
-}
+  HandleType handle_;
+};
