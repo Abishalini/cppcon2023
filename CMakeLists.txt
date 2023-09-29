@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(LIBRARY_BUILD_PATH ${CMAKE_CURRENT_BINARY_DIR}/libraries)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/core/include/motion_plan_config.h.in
-               ${CMAKE_CURRENT_BINARY_DIR}/core/include/motion_plan_config.h)
+               ${CMAKE_CURRENT_SOURCE_DIR}/core/include/motion_plan_config.h)
 
 add_subdirectory(API)
 add_subdirectory(libraries/simple_motion_planner)
