@@ -1,16 +1,17 @@
 #include "simple_motion_planner.h"
 
 #if defined(__linux__) || defined(__APPLE__)
-extern "C" {
-SimpleMotionPlanner *create()
+extern "C" 
 {
-	return new SimpleMotionPlanner();
-}
+	SimpleMotionPlanner *create()
+	{
+		return new SimpleMotionPlanner();
+	}
 
-void destroy(SimpleMotionPlanner *ptr)
-{
-	delete ptr;
-}
+	void destroy(SimpleMotionPlanner *ptr)
+	{
+		delete ptr;
+	}
 }
 #elif _WIN32
 extern "C"
@@ -26,3 +27,16 @@ extern "C"
 	}
 }
 #endif
+
+bool SimpleMotionPlanner::initialize()
+{
+	// Here is where MoveIt reads parameters and creates publishers/subscribers/services/actions
+	return true;
+}
+
+std::vector<RobotState> SimpleMotionPlanner::plan(RobotState start, RobotState goal)
+{
+	// Insert a simple motion planner
+	std::cout << "I am planning motion simply\n";
+	return std::vector<RobotState>{};
+}

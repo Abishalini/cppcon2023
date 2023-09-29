@@ -22,15 +22,23 @@ class ClassLoader
 {
 public:
   // Input parameter - fully qualified path to the runtime library
-  ClassLoader(const std::string& library_path)
+  ClassLoader(const std::string& library_path, 
+              const std::string& create_symbol=DEFAULT_CREATE_CLASS_SYMBOL, 
+              const std::string& destroy_symbol=DEFAULT_DESTROY_CLASS_SYMBOL)
   : library_path_{library_path}
-  {}
+  , create_symbol_(create_symbol)
+  , destroy_symbol_(destroy_symbol)
+  {
+    loadLibrary();
+  }
+
+  ~ClassLoader() = default;
 
   void loadLibrary()
   {
     #if defined(__linux__) || defined(__APPLE__)
     handle_ = dlopen(library_path_.c_str(), RTLD_LAZY);
-    if (handle_) {
+    if (!handle_) {
       std::cerr << "Cannot load library: " << dlerror() << '\n';
     }
     #elif _WIN32
@@ -59,24 +67,30 @@ public:
   std::shared_ptr<Base> GetInstance()
   {
     // function pointer types
-    using allocClass = Base *(*)();
-    using deleteClass = void (*)(Base *);
+    using createClass = Base *(*)();
+    using destroyClass = void (*)(Base *);
 
     #if defined(__linux__) || defined(__APPLE__)
 
-    auto createFunc = reinterpret_cast<allocClass>(
-      dlsym(handle_, DEFAULT_CREATE_CLASS_SYMBOL));
-    auto destroyFunc = reinterpret_cast<deleteClass>(
-      dlsym(handle_, DEFAULT_DESTROY_CLASS_SYMBOL));
-    if (!createFunc || !destroyFunc) {
+    auto createFunc = reinterpret_cast<createClass>(
+      dlsym(handle_, create_symbol_.c_str()));
+    if (!createFunc) {
       std::cerr << dlerror() << std::endl;
+      std::cerr << "HELP ME" << std::endl;
+    }
+    auto destroyFunc = reinterpret_cast<destroyClass>(
+      dlsym(handle_, destroy_symbol_.c_str()));
+    if (!destroyFunc) {
       unloadLibrary();
+      std::cerr << dlerror() << std::endl;
+      std::cerr << "HELP ME" << std::endl;
+
     }
     #elif _WIN32
     
-    auto createFunc = reinterpret_cast<allocClass>(
+    auto createFunc = reinterpret_cast<createClass>(
       GetProcAddress(handle_, DEFAULT_ALLOC_CLASS_SYMBOL));
-    auto destroyFunc = reinterpret_cast<deleteClass>(
+    auto destroyFunc = reinterpret_cast<destroyClass>(
       GetProcAddress(handle_, DEFAULT_DELETER_CLASS_SYMBOL));
 
     if (!createFunc || !destroyFunc) {
@@ -93,4 +107,6 @@ public:
 private:
   HandleType handle_;
   std::string library_path_;
+  std::string create_symbol_;
+  std::string destroy_symbol_;
 };
