@@ -1,19 +1,40 @@
-cmake_minimum_required(VERSION 3.22)
-project(CppConPluginExample)
+cmake_minimum_required(VERSION 3.16)
+project(plugin_cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(API)
-add_subdirectory(plugin_manager)
 add_subdirectory(libraries/simple_motion_planner)
 
-add_executable(CppConPluginExample 
+add_executable(plugin_cpp 
 	core/motion_plan.cpp
+
 )
 
 # link DL libraries
-target_link_libraries(CppConPluginExample 
+target_link_libraries(plugin_cpp 
   ${CMAKE_DL_LIBS}
   plugin_api
-  plugin_manager
+  simple_motion_planner
 )
+
+target_include_directories(
+  plugin_cpp PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/plugin_manager/>
+  $<INSTALL_INTERFACE:include>)
+
+install(
+  TARGETS plugin_cpp
+  EXPORT plugin_cppTargets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include)
+
+install(
+  EXPORT plugin_cppTargets
+  FILE plugin_cppTargets.cmake
+  NAMESPACE plugin_cpp::
+  DESTINATION lib/cmake/plugin_cpp)
+
+# Install
+include(CMakePackageConfigHelpers)

@@ -2,9 +2,6 @@
 #include <vector>
 #include <string>
 
-namespace motion_planner
-{
-
 struct RobotState {
   std::vector<std::string> joint_names;
   std::vector<double> joint_values;
@@ -17,4 +14,3 @@ public:
   virtual bool initialize() = 0;
 	virtual std::vector<RobotState> plan(RobotState start, RobotState goal) = 0;
 };
-}

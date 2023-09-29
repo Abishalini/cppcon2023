@@ -1,4 +1,4 @@
-#include "simple_motion_planner.hpp"
+#include "simple_motion_planner.h"
 
 #if defined(__linux__) || defined(__APPLE__)
 extern "C" {
