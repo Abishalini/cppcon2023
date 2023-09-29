@@ -9,6 +9,5 @@ public:
 	SimpleMotionPlanner() = default;
 	~SimpleMotionPlanner() = default;
  
-	bool initialize() override;
 	std::vector<RobotState> plan(RobotState start, RobotState goal) override;
 };

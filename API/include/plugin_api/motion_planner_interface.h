@@ -7,10 +7,14 @@ struct RobotState {
   std::vector<double> joint_values;
 };
 
+struct MotionPlannerParameters{
+  std::string description;
+};
+
 class IMotionPlanner
 {
 public:
 	virtual ~IMotionPlanner() = default;
-  virtual bool initialize() = 0;
+
 	virtual std::vector<RobotState> plan(RobotState start, RobotState goal) = 0;
 };

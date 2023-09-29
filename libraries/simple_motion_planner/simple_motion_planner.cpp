@@ -28,12 +28,6 @@ extern "C"
 }
 #endif
 
-bool SimpleMotionPlanner::initialize()
-{
-	// Here is where MoveIt reads parameters and creates publishers/subscribers/services/actions
-	return true;
-}
-
 std::vector<RobotState> SimpleMotionPlanner::plan(RobotState start, RobotState goal)
 {
 	// Insert a simple motion planner

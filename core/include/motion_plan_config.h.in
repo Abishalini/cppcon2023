@@ -1,0 +1,10 @@
+#pragma once
+
+#include <string_view>
+
+#define LIBRARY_BUILD_PATH @LIBRARY_BUILD_PATH@
+
+
+std::string library_build_path(){
+  return "@LIBRARY_BUILD_PATH@";
+}
