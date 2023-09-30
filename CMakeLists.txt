@@ -19,7 +19,6 @@ add_executable(plugin_cpp
 target_link_libraries(plugin_cpp 
   ${CMAKE_DL_LIBS}
   plugin_api
-  simple_motion_planner
 )
 
 target_include_directories(
