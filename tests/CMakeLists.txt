@@ -11,7 +11,7 @@ enable_testing()
 add_executable(test_plugin
   test_plugin.cpp
 )
-target_link_libraries(test_plugin
+target_link_libraries(test_plugin PRIVATE
   GTest::gtest_main
   GTest::gmock_main
   planner_manager

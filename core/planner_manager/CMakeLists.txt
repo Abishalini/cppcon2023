@@ -13,7 +13,7 @@ target_link_libraries(planner_manager PUBLIC
 )
 
 target_include_directories(
-  planner_manager PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  planner_manager PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>)
 
 install(

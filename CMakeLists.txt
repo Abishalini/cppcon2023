@@ -34,6 +34,11 @@ target_include_directories(
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libraries/>
   $<INSTALL_INTERFACE:include>)
 
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()  
+
 install(
   TARGETS plugin_cpp
   EXPORT plugin_cppTargets
@@ -51,7 +56,4 @@ install(
 # Install
 include(CMakePackageConfigHelpers)
 
-include(CTest)
-if(BUILD_TESTING)
-  add_subdirectory(tests)
-endif()  
+
