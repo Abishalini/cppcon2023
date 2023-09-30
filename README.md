@@ -5,9 +5,9 @@ Overview on how to constuct a plugin based system in C++
 To build the plugin manager, run the following commands:
 Unix:
 ```
-mkdir build
-cd build
-cmake ../ -B . && make
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build
 ```
 
 Windows: TODO
