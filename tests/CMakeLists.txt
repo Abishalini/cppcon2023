@@ -14,6 +14,7 @@ add_executable(test_plugin
 target_link_libraries(test_plugin
   GTest::gtest_main
   GTest::gmock_main
+  planner_manager
 )
 
 include(GoogleTest)
