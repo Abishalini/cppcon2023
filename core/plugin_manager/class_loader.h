@@ -3,6 +3,9 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <functional>
+#include <expected>
+#include <optional>
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <dlfcn.h>
@@ -17,29 +20,36 @@ namespace {
   constexpr auto DEFAULT_DESTROY_CLASS_SYMBOL{"destroy"};
 }
 
+enum struct ClassLoaderError{
+  load_error,
+  unload_error,
+  invalid_symbol,
+  handle_in_use_error, // This error only exists because I don't want to implement logic to load multiple plugins at once.
+};
+
 template<class Base>
 class ClassLoader
 {
 public:
   // Input parameter - fully qualified path to the runtime library
-  ClassLoader(const std::string& library_path, 
-              const std::string& create_symbol=DEFAULT_CREATE_CLASS_SYMBOL, 
+  ClassLoader(const std::string& create_symbol=DEFAULT_CREATE_CLASS_SYMBOL, 
               const std::string& destroy_symbol=DEFAULT_DESTROY_CLASS_SYMBOL)
-  : library_path_{library_path}
-  , create_symbol_(create_symbol)
+  : create_symbol_(create_symbol)
   , destroy_symbol_(destroy_symbol)
-  {
-    loadLibrary();
-  }
+  {}
 
   ~ClassLoader() = default;
 
-  void loadLibrary()
+  std::optional<ClassLoaderError> loadLibrary(const std::string& library_path)
   {
     #if defined(__linux__) || defined(__APPLE__)
-    handle_ = dlopen(library_path_.c_str(), RTLD_LAZY);
+    if(handle_){
+      return ClassLoaderError::handle_in_use_error;
+    }
+    handle_ = dlopen(library_path.c_str(), RTLD_LAZY);
     if (!handle_) {
       std::cerr << "Cannot load library: " << dlerror() << '\n';
+      return ClassLoaderError::load_error;
     }
     #elif _WIN32
     handle_ = LoadLibrary(library_path_.c_str());
@@ -49,12 +59,13 @@ public:
     #endif 
   }
 
-  void unloadLibrary()
+  std::optional<ClassLoaderError> unloadLibrary()
   {
     #if defined(__linux__) || defined(__APPLE__)
     if(dlclose(handle_) != 0)
     {
       std::cerr << "An error occured closing a library: " << dlerror() << '\n';
+      return ClassLoaderError::unload_error;
     }
     #elif _WIN32
     if (FreeLibrary(handle_) == 0) 
@@ -64,27 +75,20 @@ public:
     #endif   
   }
 
-  std::shared_ptr<Base> GetInstance()
+  std::expected<std::unique_ptr<Base>, ClassLoaderError> GetInstance()
   {
     // function pointer types
-    using createClass = Base *(*)();
-    using destroyClass = void (*)(Base *);
-
     #if defined(__linux__) || defined(__APPLE__)
 
-    auto createFunc = reinterpret_cast<createClass>(
-      dlsym(handle_, create_symbol_.c_str()));
-    if (!createFunc) {
+    std::function<Base *()> createFunc = dlsym(handle_, create_symbol_.c_str());
+    if (createFunc == nullptr) {
       std::cerr << dlerror() << std::endl;
-      std::cerr << "HELP ME" << std::endl;
+      return ClassLoaderError::invalid_symbol;
     }
-    auto destroyFunc = reinterpret_cast<destroyClass>(
-      dlsym(handle_, destroy_symbol_.c_str()));
-    if (!destroyFunc) {
-      unloadLibrary();
+    std::function<void(Base *)> destroyFunc = dlsym(handle_, destroy_symbol_.c_str());
+    if (destroyFunc == nullptr) {
       std::cerr << dlerror() << std::endl;
-      std::cerr << "HELP ME" << std::endl;
-
+      return ClassLoaderError::invalid_symbol;
     }
     #elif _WIN32
     
@@ -99,7 +103,7 @@ public:
     }
     #endif
 
-    return std::shared_ptr<Base>(
+    return std::unique_ptr<Base>(
         createFunc(),
         [destroyFunc](Base *p){ destroyFunc(p); });
   }
