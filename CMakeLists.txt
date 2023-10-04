@@ -9,6 +9,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/core/include/motion_plan_config.h.in
                ${CMAKE_CURRENT_SOURCE_DIR}/core/include/motion_plan_config.h)
 
 add_subdirectory(API)
+add_subdirectory(core/planner_manager)
 add_subdirectory(libraries/simple_motion_planner)
 
 add_executable(plugin_cpp 
@@ -19,17 +20,24 @@ add_executable(plugin_cpp
 target_link_libraries(plugin_cpp 
   ${CMAKE_DL_LIBS}
   plugin_api
-  simple_motion_planner
+  planner_manager
 )
 
 target_include_directories(
   plugin_cpp PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/plugin_manager/>
   $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/planner_manager/>
+  $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/include/>
   $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libraries/>
   $<INSTALL_INTERFACE:include>)
+
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()  
 
 install(
   TARGETS plugin_cpp
@@ -47,3 +55,5 @@ install(
 
 # Install
 include(CMakePackageConfigHelpers)
+
+
